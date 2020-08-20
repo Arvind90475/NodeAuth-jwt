@@ -1,27 +1,25 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const volleyball = require('volleyball');
 const mongoose = require('mongoose');
-
-
 
 // db config
 const url = 'mongodb://localhost:27017/nodeAuth-jwt' || process.env.DBURL;
 connectDb();
 
-
-
-
 // requiring routes
-const auth = require('./rotues/authRoutes');
+const authRoutes = require('./routes/authRoutes');
+
+
+app.use(volleyball);
+app.use(express.json());
+
 
 
 // using routes
-app.use('/auth', auth);
+app.use('/auth', authRoutes);
 
-
-
-app.use(express.json());
 
 
 
@@ -29,10 +27,14 @@ app.use(express.json());
 app.get('/', (req, res, next) => {
     res.json({
         'status': 200,
-        'message': 'success'
+        'message': 'Hello form home route'
     });
 });
 
+
+app.get('/*', (req, res) => {
+    res.send('not found')
+})
 
 async function connectDb() {
     try {
@@ -48,11 +50,10 @@ async function connectDb() {
     }
 }
 
-app.use(errorHandler);
 
-function errorHandler(req, res, err) {
-    res.send('not found');
-}
+app.use(function (err, req, res, next) {
+    res.json({ "error": err.message });
+});
 
 
 
