@@ -1,25 +1,31 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const cookieParser = require('cookie-parser');
 const volleyball = require('volleyball');
-const mongoose = require('mongoose');
 
-// db config
-const url = 'mongodb://localhost:27017/nodeAuth-jwt' || process.env.DBURL;
+
+// Database and listen to port
+const connectDb = require('./db.config');
 connectDb();
+
+// middleware
+const { isLoggedIn } = require('./middlewares/middleware');
 
 // requiring routes
 const authRoutes = require('./routes/authRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 
 app.use(volleyball);
+app.use(cookieParser());
 app.use(express.json());
 
 
 
 // using routes
 app.use('/auth', authRoutes);
-
+app.use('/dashboard', isLoggedIn, dashboardRoutes);
 
 
 
@@ -33,32 +39,15 @@ app.get('/', (req, res, next) => {
 
 
 app.get('/*', (req, res) => {
-    res.send('not found')
+    res.status(404).send('not found')
 })
-
-async function connectDb() {
-    try {
-        await mongoose.connect(url,
-            {
-                useNewUrlParser: true,
-                useUnifiedTopology: true
-            }
-        );
-        console.log('connected to DB');
-    } catch (error) {
-        console.log(error);
-    }
-}
 
 
 app.use(function (err, req, res, next) {
-    res.json({ "error": err.message });
+    res.status(500).json({ "error": err.message });
 });
 
 
 
-
-const port = 3000;
-app.listen(port, (err) => {
-    console.log(`server has started at port ${port}`)
-})
+const PORT = 3000 || process.env.DBURL;
+app.listen(PORT, () => console.log(`server started at ${PORT}`));
