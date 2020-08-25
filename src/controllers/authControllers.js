@@ -17,7 +17,7 @@ module.exports.signup_post = async (req, res, next) => {
         }
         // value represents the user to be created whose password is hashed in mongoose hooks
         const newUser = await User.create(value);
-        const data = { id: newUser._id, email: newUser.email, token };
+        const data = { id: newUser._id, email: newUser.email };
         res.status(201).json(data);
     } catch (err) {
         if (err.name === 'MongoError' && err.code === 11000) {
@@ -47,7 +47,7 @@ module.exports.login_post = async (req, res, next) => {
         const passwordMatched = await bcrypt.compareSync(value.password, dbUser.password);
         if (!passwordMatched) {
             // password does not match
-            res.status(422);
+            res.status(401);
             throw new Error('Wrong password');
         }
         // everything is fine we send token along with user data

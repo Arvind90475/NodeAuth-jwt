@@ -1,4 +1,4 @@
-require('dotenv').config();
+const cors = require('cors');
 const express = require('express');
 const app = express();
 const cookieParser = require('cookie-parser');
@@ -16,7 +16,7 @@ const { isLoggedIn } = require('./middlewares/middleware');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
-
+app.use(cors());
 app.use(volleyball);
 app.use(cookieParser());
 app.use(express.json());
@@ -33,18 +33,28 @@ app.use('/dashboard', isLoggedIn, dashboardRoutes);
 app.get('/', (req, res, next) => {
     res.json({
         'status': 200,
-        'message': 'Hello form home route'
+        'message': 'Hello from home route'
     });
 });
 
 
-app.get('/*', (req, res) => {
-    res.status(404).send('not found')
-})
 
 
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+
+// error handler
 app.use(function (err, req, res, next) {
-    res.status(500).json({ "error": err.message });
+    res.status(res.statusCode || 500);
+    res.json({
+        message: err.message,
+        error: req.app.get('env') === 'development' ? err.stack : {}
+    })
 });
 
 

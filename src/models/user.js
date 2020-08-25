@@ -22,7 +22,7 @@ userSchema.pre('save', async function (next) {
     // this refers to the local instance of user which in this case is the user that will be created
     try {
         // hash the password here
-        this.password = await bcrypt.hash(this.password, 6);
+        this.password = await bcrypt.hash(this.password, 10);
     } catch (error) {
         next(error);
     }
